@@ -1,0 +1,24 @@
+# Environment
+.env
+*.env
+
+# Data (large files - add PDF manually)
+data/cyber_ireland_2022.pdf
+data/chroma_db/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.venv/
+venv/
+env/
+
+# Logs (optional - keep sample, exclude generated)
+logs/traces/*.json
+!logs/traces/sample_eval_trace.json
+
+# OS
+.DS_Store
+Thumbs.db
