@@ -790,7 +790,10 @@
 </div>
 
 <script>
-  const API_BASE = 'http://localhost:8000';
+  // Auto-detect: localhost → local API; else use deployed backend (replace with your URL)
+  const API_BASE = window.location.hostname === 'localhost'
+    ? 'http://localhost:8000'
+    : 'https://your-backend.onrender.com';  // ← Replace when deploying backend
 
   // Char counter
   const input = document.getElementById('queryInput');

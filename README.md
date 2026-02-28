@@ -61,6 +61,7 @@ PDF
 cyber-ireland-agent/
 ├── README.md
 ├── requirements.txt
+├── cyber-ireland-ui.html   # Frontend UI (open in browser)
 ├── .env.example
 ├── etl/
 │   ├── ingest.py          # ETL pipeline: PDF → ChromaDB
@@ -141,13 +142,71 @@ python tests/run_eval.py
 
 This executes all three test queries and saves detailed JSON traces to `logs/traces/`.
 
-### 8. Manual query via curl
+### 8. Open the frontend UI (optional)
+
+```bash
+# With the API running, open in browser:
+open cyber-ireland-ui.html
+# Or double-click cyber-ireland-ui.html
+```
+
+### 9. Manual query via curl
 
 ```bash
 curl -X POST http://localhost:8000/query \
   -H "Content-Type: application/json" \
   -d '{"query": "What is the total number of jobs reported?"}'
 ```
+
+---
+
+## Deploying the Frontend UI
+
+The frontend (`cyber-ireland-ui.html`) auto-detects: on localhost it uses `http://localhost:8000`; otherwise it uses a production API URL.
+
+### Option A: GitHub Pages (free)
+
+1. **Add the UI to your repo** (if not already committed):
+   ```bash
+   git add cyber-ireland-ui.html
+   git commit -m "Add frontend UI"
+   git push
+   ```
+
+2. **Enable GitHub Pages**: Repo → **Settings** → **Pages** → Source: **Deploy from branch** → Branch: **main** → Folder: **/ (root)** → Save.
+
+3. **Set the frontend as the repo website**: Repo → click the gear next to **About** → Website: `https://ajaygugul8.github.io/cyber-ireland-agent/cyber-ireland-ui.html` (or your Pages URL).
+
+4. **Backend required**: The UI calls your API. Either:
+   - Run the backend locally and use the UI from `file://` (won’t work due to CORS), or
+   - Deploy the backend (e.g. Render) and update the production URL in `cyber-ireland-ui.html`:
+     ```javascript
+     // Line ~796: replace with your deployed API URL
+     : 'https://your-backend.onrender.com';
+     ```
+
+### Option B: Netlify (drag & drop)
+
+1. Go to [netlify.com](https://netlify.com) → **Add new site** → **Deploy manually**.
+2. Drag the project folder (or just the HTML file) into the deploy area.
+3. Update `API_BASE` in the HTML to your backend URL before uploading.
+
+### Option C: Vercel
+
+1. Go to [vercel.com](https://vercel.com) → **New Project** → Import your GitHub repo.
+2. Root directory: `./` — Vercel will serve static files.
+3. Update `API_BASE` in the HTML to your backend URL, then push.
+
+### Deploying the backend (for a live demo)
+
+To have the frontend work when hosted (not localhost), deploy the FastAPI backend, e.g. on **Render**:
+
+1. Go to [render.com](https://render.com) → **New** → **Web Service**.
+2. Connect your GitHub repo; set:
+   - **Build command**: `pip install -r requirements.txt && python etl/ingest.py`
+   - **Start command**: `uvicorn agent.api:app --host 0.0.0.0 --port $PORT`
+   - Add env vars: `GROQ_API_KEY` (or `ANTHROPIC_API_KEY`), and ensure `data/cyber_ireland_2022.pdf` is in the repo or fetched at build time.
+3. After deploy, copy the service URL (e.g. `https://cyber-ireland-agent-xyz.onrender.com`) and set it in `cyber-ireland-ui.html` as the production `API_BASE`, then redeploy the frontend.
 
 ---
 
