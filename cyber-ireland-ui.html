@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cyber Ireland Intelligence System</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #020608;
+    --surface: #060d10;
+    --panel: #0a1518;
+    --border: #0e2a30;
+    --accent: #00e5ff;
+    --accent2: #00ff88;
+    --accent3: #ff6b35;
+    --text: #c8e6ea;
+    --muted: #4a7a82;
+    --danger: #ff3d5a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Animated grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,229,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Scanline effect */
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.08) 2px,
+      rgba(0,0,0,0.08) 4px
+    );
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    position: relative;
+    z-index: 1;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 24px;
+  }
+
+  /* Header */
+  header {
+    padding: 32px 0 24px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    left: 0;
+    width: 200px;
+    height: 1px;
+    background: var(--accent);
+    box-shadow: 0 0 20px var(--accent);
+  }
+
+  .header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .logo-block {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .logo-icon {
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--accent);
+    display: grid;
+    place-items: center;
+    position: relative;
+    box-shadow: 0 0 20px rgba(0,229,255,0.2), inset 0 0 20px rgba(0,229,255,0.05);
+  }
+
+  .logo-icon::before {
+    content: '⬡';
+    font-size: 22px;
+    color: var(--accent);
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; text-shadow: 0 0 10px var(--accent); }
+    50% { opacity: 0.6; text-shadow: none; }
+  }
+
+  .logo-text h1 {
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: #fff;
+  }
+
+  .logo-text span {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.2em;
+  }
+
+  .status-bar {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .status-pill {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    padding: 5px 12px;
+    border: 1px solid var(--accent2);
+    color: var(--accent2);
+    letter-spacing: 0.1em;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .status-dot {
+    width: 6px;
+    height: 6px;
+    background: var(--accent2);
+    border-radius: 50%;
+    animation: blink 1.5s step-end infinite;
+    box-shadow: 0 0 8px var(--accent2);
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.2; }
+  }
+
+  /* Main layout */
+  main {
+    padding: 40px 0;
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 24px;
+    min-height: calc(100vh - 120px);
+  }
+
+  /* Query panel */
+  .query-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .panel-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .query-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 20px;
+    position: relative;
+  }
+
+  .query-box::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 40px; height: 2px;
+    background: var(--accent);
+  }
+
+  textarea {
+    width: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 14px;
+    line-height: 1.7;
+    resize: none;
+    min-height: 100px;
+    caret-color: var(--accent);
+  }
+
+  textarea::placeholder {
+    color: var(--muted);
+  }
+
+  .query-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    margin-top: 4px;
+  }
+
+  .char-count {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+  }
+
+  .submit-btn {
+    background: transparent;
+    border: 1px solid var(--accent);
+    color: var(--accent);
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    padding: 10px 28px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.2s;
+  }
+
+  .submit-btn::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--accent);
+    transform: translateX(-101%);
+    transition: transform 0.2s;
+  }
+
+  .submit-btn:hover::before { transform: translateX(0); }
+  .submit-btn:hover { color: var(--bg); }
+  .submit-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  .submit-btn:disabled::before { display: none; }
+
+  .submit-btn span { position: relative; z-index: 1; }
+
+  /* Response area */
+  .response-area {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 24px;
+    min-height: 300px;
+    position: relative;
+    flex: 1;
+  }
+
+  .response-area::before {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 40px; height: 2px;
+    background: var(--accent2);
+  }
+
+  .response-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 260px;
+    gap: 12px;
+    color: var(--muted);
+  }
+
+  .response-empty .big-icon {
+    font-size: 40px;
+    opacity: 0.3;
+  }
+
+  .response-empty p {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    letter-spacing: 0.15em;
+  }
+
+  /* Loading state */
+  .loading-state {
+    display: none;
+    flex-direction: column;
+    gap: 16px;
+    padding: 20px 0;
+  }
+
+  .loading-state.active { display: flex; }
+
+  .loading-bar-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .loading-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+  }
+
+  .loading-bar {
+    height: 2px;
+    background: var(--border);
+    overflow: hidden;
+  }
+
+  .loading-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    animation: loadbar 1.5s ease-in-out infinite;
+    width: 40%;
+  }
+
+  @keyframes loadbar {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(350%); }
+  }
+
+  .thinking-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .thinking-step {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    opacity: 0;
+    animation: fadeStep 0.3s forwards;
+  }
+
+  .thinking-step.active { color: var(--accent); }
+  .thinking-step::before { content: '▸'; }
+  .thinking-step.done::before { content: '✓'; color: var(--accent2); }
+
+  @keyframes fadeStep {
+    to { opacity: 1; }
+  }
+
+  /* Answer display */
+  .answer-display { display: none; }
+  .answer-display.active { display: block; }
+
+  .answer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .answer-tag {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--accent2);
+    text-transform: uppercase;
+  }
+
+  .answer-time {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  .answer-text {
+    font-size: 15px;
+    line-height: 1.8;
+    color: var(--text);
+    white-space: pre-wrap;
+  }
+
+  .answer-text strong {
+    color: var(--accent);
+    font-weight: 700;
+  }
+
+  /* Tools used */
+  .tools-used {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+  }
+
+  .tools-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.2em;
+    margin-bottom: 10px;
+  }
+
+  .tool-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .tool-tag {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    padding: 3px 10px;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    letter-spacing: 0.05em;
+  }
+
+  .tool-tag.highlight {
+    border-color: var(--accent3);
+    color: var(--accent3);
+  }
+
+  /* Error */
+  .error-display {
+    display: none;
+    padding: 16px;
+    border: 1px solid var(--danger);
+    background: rgba(255,61,90,0.05);
+  }
+
+  .error-display.active { display: block; }
+
+  .error-display p {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    color: var(--danger);
+  }
+
+  /* Sidebar */
+  .sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .sidebar-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 20px;
+    position: relative;
+  }
+
+  .sidebar-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px; height: 30px;
+    background: var(--accent3);
+  }
+
+  .sidebar-card h3 {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text);
+    margin-bottom: 14px;
+  }
+
+  /* Preset queries */
+  .preset-btn {
+    width: 100%;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    padding: 10px 12px;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.15s;
+    margin-bottom: 6px;
+    line-height: 1.5;
+    letter-spacing: 0.02em;
+  }
+
+  .preset-btn:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(0,229,255,0.04);
+  }
+
+  .preset-btn:last-child { margin-bottom: 0; }
+
+  /* Stats */
+  .stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .stat-row:last-child { border-bottom: none; }
+
+  .stat-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.05em;
+  }
+
+  .stat-value {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  /* Trace viewer */
+  .trace-toggle {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    padding: 8px 14px;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+    letter-spacing: 0.1em;
+    transition: all 0.15s;
+    margin-top: 16px;
+  }
+
+  .trace-toggle:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .trace-panel {
+    display: none;
+    margin-top: 12px;
+    max-height: 300px;
+    overflow-y: auto;
+  }
+
+  .trace-panel.open { display: block; }
+
+  .trace-step {
+    padding: 10px 12px;
+    border-left: 2px solid var(--border);
+    margin-bottom: 8px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    line-height: 1.6;
+  }
+
+  .trace-step-tool {
+    color: var(--accent3);
+    letter-spacing: 0.1em;
+    margin-bottom: 4px;
+  }
+
+  .trace-step-input {
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+
+  .trace-step-obs {
+    color: var(--text);
+    opacity: 0.7;
+    max-height: 60px;
+    overflow: hidden;
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); }
+  ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    main { grid-template-columns: 1fr; }
+    .sidebar { order: -1; }
+  }
+
+  /* Corner decorations */
+  .corner-tl, .corner-br {
+    position: fixed;
+    width: 80px;
+    height: 80px;
+    pointer-events: none;
+    z-index: 2;
+  }
+
+  .corner-tl {
+    top: 0; left: 0;
+    border-top: 1px solid rgba(0,229,255,0.15);
+    border-left: 1px solid rgba(0,229,255,0.15);
+  }
+
+  .corner-br {
+    bottom: 0; right: 0;
+    border-bottom: 1px solid rgba(0,229,255,0.15);
+    border-right: 1px solid rgba(0,229,255,0.15);
+  }
+</style>
+</head>
+<body>
+
+<div class="corner-tl"></div>
+<div class="corner-br"></div>
+
+<div class="container">
+  <header>
+    <div class="header-inner">
+      <div class="logo-block">
+        <div class="logo-icon"></div>
+        <div class="logo-text">
+          <h1>Cyber Ireland</h1>
+          <span>INTELLIGENCE QUERY SYSTEM // 2022 EDITION</span>
+        </div>
+      </div>
+      <div class="status-bar">
+        <div class="status-pill">
+          <div class="status-dot"></div>
+          SYSTEM ONLINE
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="query-panel">
+      <div>
+        <div class="panel-label">// Query Input</div>
+        <div class="query-box">
+          <textarea id="queryInput" placeholder="Enter your intelligence query about the Cyber Ireland 2022 report..." rows="4"></textarea>
+          <div class="query-footer">
+            <span class="char-count" id="charCount">0 chars</span>
+            <button class="submit-btn" id="submitBtn" onclick="submitQuery()">
+              <span>Execute Query</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="panel-label">// Response</div>
+        <div class="response-area">
+
+          <div class="response-empty" id="emptyState">
+            <div class="big-icon">◈</div>
+            <p>AWAITING QUERY INPUT</p>
+          </div>
+
+          <div class="loading-state" id="loadingState">
+            <div class="loading-bar-wrap">
+              <div class="loading-label" id="loadingLabel">INITIALISING AGENT...</div>
+              <div class="loading-bar"><div class="loading-bar-fill"></div></div>
+            </div>
+            <div class="thinking-steps" id="thinkingSteps"></div>
+          </div>
+
+          <div class="answer-display" id="answerDisplay">
+            <div class="answer-header">
+              <span class="answer-tag">✓ RESPONSE VERIFIED</span>
+              <span class="answer-time" id="responseTime"></span>
+            </div>
+            <div class="answer-text" id="answerText"></div>
+            <div class="tools-used" id="toolsUsed" style="display:none">
+              <div class="tools-label">TOOLS INVOKED</div>
+              <div class="tool-tags" id="toolTags"></div>
+            </div>
+            <button class="trace-toggle" id="traceToggle" onclick="toggleTrace()" style="display:none">
+              ▸ VIEW REASONING TRACE
+            </button>
+            <div class="trace-panel" id="tracePanel"></div>
+          </div>
+
+          <div class="error-display" id="errorDisplay">
+            <p id="errorText"></p>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <div class="sidebar">
+      <div class="sidebar-card">
+        <h3>Preset Queries</h3>
+        <button class="preset-btn" onclick="setQuery('What is the total number of jobs reported, and where exactly is this stated?')">
+          [T1] Total jobs reported + page citation
+        </button>
+        <button class="preset-btn" onclick="setQuery('Compare the concentration of dedicated (pure-play) cybersecurity firms in Cork versus Dublin using the regional office data table.')">
+          [T2] Pure-play firm concentration comparison
+        </button>
+        <button class="preset-btn" onclick="setQuery('Based on the 2022 baseline employment figure of 7,351 and the National Cyber Security Strategy job target for 2030, what is the required CAGR?')">
+          [T3] Required CAGR to hit 2030 target
+        </button>
+      </div>
+
+      <div class="sidebar-card">
+        <h3>Index Stats</h3>
+        <div class="stat-row">
+          <span class="stat-label">Pages indexed</span>
+          <span class="stat-value">39</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Tables extracted</span>
+          <span class="stat-value">28</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Vector chunks</span>
+          <span class="stat-value">133</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">Embedding model</span>
+          <span class="stat-value" style="font-size:9px">MiniLM-L6</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">LLM</span>
+          <span class="stat-value" style="font-size:9px">Llama-3.3-70B</span>
+        </div>
+      </div>
+
+      <div class="sidebar-card">
+        <h3>Available Tools</h3>
+        <div class="stat-row">
+          <span class="stat-label">vector_search</span>
+          <span style="font-size:9px; color: var(--accent2); font-family: monospace;">semantic</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">keyword_search</span>
+          <span style="font-size:9px; color: var(--accent2); font-family: monospace;">exact match</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">get_page_text</span>
+          <span style="font-size:9px; color: var(--accent2); font-family: monospace;">citation</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">get_all_tables</span>
+          <span style="font-size:9px; color: var(--accent2); font-family: monospace;">structured</span>
+        </div>
+        <div class="stat-row">
+          <span class="stat-label">calculator</span>
+          <span style="font-size:9px; color: var(--accent3); font-family: monospace;">math only</span>
+        </div>
+        <div class="stat-row" style="border:none">
+          <span class="stat-label">search_tables_for_keyword</span>
+          <span style="font-size:9px; color: var(--accent2); font-family: monospace;">tables</span>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+  const API_BASE = 'http://localhost:8000';
+
+  // Char counter
+  const input = document.getElementById('queryInput');
+  input.addEventListener('input', () => {
+    document.getElementById('charCount').textContent = input.value.length + ' chars';
+  });
+
+  function setQuery(text) {
+    input.value = text;
+    document.getElementById('charCount').textContent = text.length + ' chars';
+    input.focus();
+  }
+
+  const thinkingMessages = [
+    'Parsing query intent...',
+    'Searching vector index...',
+    'Retrieving relevant chunks...',
+    'Scanning tables...',
+    'Verifying citations...',
+    'Running calculations...',
+    'Synthesising response...',
+  ];
+
+  let thinkingInterval;
+  let stepIndex = 0;
+
+  function startThinking() {
+    const container = document.getElementById('thinkingSteps');
+    container.innerHTML = '';
+    stepIndex = 0;
+
+    thinkingInterval = setInterval(() => {
+      if (stepIndex >= thinkingMessages.length) {
+        clearInterval(thinkingInterval);
+        return;
+      }
+      const div = document.createElement('div');
+      div.className = 'thinking-step active';
+      div.style.animationDelay = '0s';
+      div.textContent = thinkingMessages[stepIndex];
+      // Mark previous as done
+      const prev = container.querySelector('.thinking-step.active');
+      if (prev) {
+        prev.classList.remove('active');
+        prev.classList.add('done');
+      }
+      container.appendChild(div);
+      stepIndex++;
+    }, 1800);
+  }
+
+  function stopThinking() {
+    clearInterval(thinkingInterval);
+    // Mark last step done
+    const last = document.getElementById('thinkingSteps').querySelector('.thinking-step.active');
+    if (last) { last.classList.remove('active'); last.classList.add('done'); }
+  }
+
+  async function submitQuery() {
+    const query = input.value.trim();
+    if (!query) return;
+
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+
+    // Reset UI
+    document.getElementById('emptyState').style.display = 'none';
+    document.getElementById('answerDisplay').classList.remove('active');
+    document.getElementById('errorDisplay').classList.remove('active');
+    document.getElementById('tracePanel').classList.remove('open');
+
+    const loadingState = document.getElementById('loadingState');
+    loadingState.classList.add('active');
+    document.getElementById('loadingLabel').textContent = 'AGENT REASONING...';
+    startThinking();
+
+    const startTime = Date.now();
+
+    try {
+      const res = await fetch(`${API_BASE}/query`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ query, save_trace: true }),
+      });
+
+      const data = await res.json();
+      const elapsed = ((Date.now() - startTime) / 1000).toFixed(2);
+
+      stopThinking();
+      loadingState.classList.remove('active');
+
+      if (!res.ok) {
+        showError(data.detail || 'Server error');
+        return;
+      }
+
+      showAnswer(data, elapsed);
+
+    } catch (err) {
+      stopThinking();
+      loadingState.classList.remove('active');
+      showError(`Cannot reach API at ${API_BASE}. Is the server running?\n\nStart it with: uvicorn agent.api:app --port 8000`);
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  function showAnswer(data, elapsed) {
+    const display = document.getElementById('answerDisplay');
+    display.classList.add('active');
+
+    document.getElementById('responseTime').textContent = `${elapsed}s`;
+
+    // Format answer — bold numbers
+    let answer = data.answer || '';
+    answer = answer.replace(/(\d[\d,\.]*%?)/g, '<strong>$1</strong>');
+    document.getElementById('answerText').innerHTML = answer;
+
+    // Tools
+    const tools = (data.tool_calls || []).map(t => t.tool);
+    if (tools.length) {
+      const unique = [...new Set(tools)];
+      const tagsEl = document.getElementById('toolTags');
+      tagsEl.innerHTML = '';
+      unique.forEach(tool => {
+        const tag = document.createElement('span');
+        tag.className = 'tool-tag' + (tool === 'calculator' ? ' highlight' : '');
+        tag.textContent = tool;
+        tagsEl.appendChild(tag);
+      });
+      document.getElementById('toolsUsed').style.display = 'block';
+    }
+
+    // Trace
+    const trace = data.reasoning_trace || [];
+    if (trace.length) {
+      const panel = document.getElementById('tracePanel');
+      panel.innerHTML = '';
+      trace.forEach((step, i) => {
+        const div = document.createElement('div');
+        div.className = 'trace-step';
+        div.innerHTML = `
+          <div class="trace-step-tool">▸ ${step.tool || 'unknown'}</div>
+          <div class="trace-step-input">INPUT: ${String(step.tool_input || '').substring(0, 120)}</div>
+          <div class="trace-step-obs">${String(step.observation || '').substring(0, 200)}</div>
+        `;
+        panel.appendChild(div);
+      });
+      document.getElementById('traceToggle').style.display = 'block';
+    }
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('errorDisplay');
+    el.classList.add('active');
+    document.getElementById('errorText').textContent = '⚠ ' + msg;
+  }
+
+  function toggleTrace() {
+    const panel = document.getElementById('tracePanel');
+    const btn = document.getElementById('traceToggle');
+    panel.classList.toggle('open');
+    btn.textContent = panel.classList.contains('open')
+      ? '▾ HIDE REASONING TRACE'
+      : '▸ VIEW REASONING TRACE';
+  }
+
+  // Allow Ctrl+Enter to submit
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && e.ctrlKey) submitQuery();
+  });
+</script>
+</body>
+</html>
