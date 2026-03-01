@@ -132,6 +132,7 @@ Expected output:
 
 ```bash
 uvicorn agent.api:app --reload --port 8000
+uvicorn agent.api:app --port 8000
 ```
 
 ### 7. Run the 3 evaluation queries
