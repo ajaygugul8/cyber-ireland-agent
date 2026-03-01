@@ -50,7 +50,7 @@ PDF
 | Vector DB | ChromaDB (local) | Zero-infrastructure, persists to disk, easy to swap for Pinecone/Weaviate in prod |
 | Embeddings | `sentence-transformers/all-MiniLM-L6-v2` | Fast, local, no API cost; swap for OpenAI `text-embedding-3-small` for production |
 | Agent framework | LangChain ReAct agent | Transparent reasoning trace; tool-use with self-correction; structured output |
-| LLM | Claude claude-sonnet-4-6 via Anthropic API (configurable) | Strong instruction-following; reliable tool selection |
+| LLM | Groq (primary); optional Anthropic and OpenAI | Groq for fast inference; Anthropic/OpenAI configurable as alternatives |
 | Math | Dedicated `calculator` tool | LLMs must not do CAGR/arithmetic themselves; Python executes it deterministically |
 
 ---
@@ -98,7 +98,7 @@ pip install -r requirements.txt
 
 ```bash
 cp .env.example .env
-# Edit .env and add your ANTHROPIC_API_KEY (or OPENAI_API_KEY)
+# Edit .env and add your GROQ_API_KEY (optional: ANTHROPIC_API_KEY, OPENAI_API_KEY)
 ```
 
 ### 4. Download the PDF
@@ -205,7 +205,7 @@ To have the frontend work when hosted (not localhost), deploy the FastAPI backen
 2. Connect your GitHub repo; set:
    - **Build command**: `pip install -r requirements.txt && python etl/ingest.py`
    - **Start command**: `uvicorn agent.api:app --host 0.0.0.0 --port $PORT`
-   - Add env vars: `GROQ_API_KEY` (or `ANTHROPIC_API_KEY`), and ensure `data/cyber_ireland_2022.pdf` is in the repo or fetched at build time.
+   - Add env vars: `GROQ_API_KEY` (primary); optionally `ANTHROPIC_API_KEY` or `OPENAI_API_KEY`. Ensure `data/cyber_ireland_2022.pdf` is in the repo or fetched at build time.
 3. After deploy, copy the service URL (e.g. `https://cyber-ireland-agent-xyz.onrender.com`) and set it in `cyber-ireland-ui.html` as the production `API_BASE`, then redeploy the frontend.
 
 ---
